@@ -1,4 +1,3 @@
-
 const paginate = (req, res, next) => {
   let data = [];
   const page = parseInt(req.query.page) || 1;
@@ -14,4 +13,4 @@ const paginate = (req, res, next) => {
   next();
 };
 
-module.exports= {paginate}
+module.exports = { paginate };
