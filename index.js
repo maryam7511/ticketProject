@@ -8,5 +8,8 @@ require('./startup/config')(app,express);
 
 require('./startup/db')();
 
+
+app.use('/api',router)
+
 const port = process.env.PORT
 app.listen(port, ()=>console.log(`listening on port ${port}`))
