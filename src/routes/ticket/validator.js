@@ -12,10 +12,7 @@ module.exports = new (class {
   updateValidator() {
     return [
     check("title").not().isEmpty().withMessage("title cant be empty"),
-    check("description")
-      .not()
-      .isEmpty()
-      .withMessage("description cant be empty"),
+    check("description").not().isEmpty().withMessage("description cant be empty"),
     check("priority").not().isEmpty().withMessage("priority cant be empty"),
   ]
 }
