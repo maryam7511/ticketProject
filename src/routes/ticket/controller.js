@@ -4,39 +4,41 @@ const { TICKET_ROLE_CODES } = require("./../../models/constants");
 const { Ticket } = require("./../../models/tickets");
 const { User } = require("./../../models/users");
 
+const paginate = (req, res, next) => {
+  
+  next();
+};
+
+
 module.exports= new (class extends controller {
+  
   async getTicket(req,res) {
     let data = [];
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 5;
-    const startIndex = (page - 1) * limit;
-    const endIndex = startIndex + limit;
-  
-    res.paginatedResults = {
-      results: data.slice(startIndex, endIndex),
-      currentPage: page,
-      totalPages: Math.ceil(data.length / limit),
-    };
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 5;
+  const startIndex = (page - 1) * limit;
+  const endIndex = startIndex + limit;
+
+
     const user = await User.findById(req.user._id);
   if (
-    user.ticketRoleCode === TICKET_ROLE_CODES.ADMIN ||
-    user.ticketRoleCode === TICKET_ROLE_CODES.MANAGER
-  ) {
-    data = await Ticket.find()
-      .populate("assignedTo", "name")
-      .populate("createdBy", "name");
+    user.ticketRoleCode === TICKET_ROLE_CODES.ADMIN ||user.ticketRoleCode === TICKET_ROLE_CODES.MANAGER) {
+     data = await Ticket.find().populate("assignedTo", "name").populate("createdBy", "name");
   } else if (user.ticketRoleCode === TICKET_ROLE_CODES.AGENT) {
-    data = await Ticket.find({ assignedTo: req.user._id })
-      .populate("assignedTo", "name")
-      .populate("createdBy", "name");
+     data = await Ticket.find({ assignedTo: req.user._id }).populate("assignedTo", "name").populate("createdBy", "name");
   } else {
-    data = await Ticket.find({ createdBy: req.user._id });
+     data = await Ticket.find({ createdBy: req.user._id });
   }
   data.sort((a, b) => {
     if (a.title < b.title) return 1;
     if (a.title > b.title) return -1;
     return 0;
   });
+  res.paginatedResults = {
+    results: data.slice(startIndex, endIndex),
+    currentPage: page,
+    totalPages: Math.ceil(data.length / limit),
+  };
 
   res.json({
     data: res.paginatedResults,

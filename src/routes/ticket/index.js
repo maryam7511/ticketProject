@@ -3,6 +3,14 @@ const router=express.Router();
 const controller=require('./controller')
 const validator=require('./validator')
 
+
+
+const paginate = (req, res, next) => {
+  
+  next();
+};
+
+
 router.get(
   '/',
   controller.getTicket
