@@ -1,6 +1,7 @@
 const express=require('express')
 const router=express.Router();
 const controller=require('./controller')
+const validator=require('./validator')
 
 router.get(
   '/',
@@ -9,6 +10,7 @@ router.get(
 
 router.post(
   '/',
+  validator.createValidator(),
   controller.createTicket
 )
 
@@ -19,6 +21,7 @@ router.delete(
 
 router.put(
   '/:id',
+  validator.updateValidator(),
   controller.updateTicket
 )
 
