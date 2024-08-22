@@ -25,8 +25,8 @@ module.exports= new (class extends controller {
      data = await Ticket.find({ createdBy: req.user._id });
   }
   data.sort((a, b) => {
-    if (a.title < b.title) return 1;
-    if (a.title > b.title) return -1;
+    if (a.createdAt < b.createdAt) return 1;
+    if (a.createdAt > b.createdAt) return -1;
     return 0;
   });
   res.paginatedResults = {
