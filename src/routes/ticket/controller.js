@@ -4,16 +4,11 @@ const { TICKET_ROLE_CODES } = require("./../../models/constants");
 const { Ticket } = require("./../../models/tickets");
 const { User } = require("./../../models/users");
 
-const paginate = (req, res, next) => {
-  
-  next();
-};
-
 
 module.exports= new (class extends controller {
   
   async getTicket(req,res) {
-    let data = [];
+  let data = [];
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 5;
   const startIndex = (page - 1) * limit;
@@ -40,10 +35,9 @@ module.exports= new (class extends controller {
     totalPages: Math.ceil(data.length / limit),
   };
 
-  res.json({
-    data: res.paginatedResults,
-    message: "ok",
-  });
+  this.response({
+    res,message:'ok',data:res.paginatedResults
+  })
     
     }
 
@@ -60,10 +54,9 @@ module.exports= new (class extends controller {
       createdBy: req.user._id,
     });
     newTicket = await newTicket.save();
-    res.json({
-      data: newTicket,
-      message: "ok",
-    });
+    this.response({
+      res,message:'ok',data:newTicket
+    })
     
     }
 
@@ -72,9 +65,7 @@ module.exports= new (class extends controller {
   async deleteTicket(req,res) {
        const user = await User.findById(req.user._id);
   if (
-    user.ticketRoleCode !== TICKET_ROLE_CODES.ADMIN &&
-    user.ticketRoleCode !== TICKET_ROLE_CODES.AGENT
-  ) {
+    user.ticketRoleCode !== TICKET_ROLE_CODES.ADMIN && user.ticketRoleCode !== TICKET_ROLE_CODES.AGENT) {
     return res.status(403).json({ error: "Forbidden" });
   }
   const ticket = await Ticket.findByIdAndDelete(req.params.id);
@@ -84,44 +75,62 @@ module.exports= new (class extends controller {
       message: "the ticket with this id was not found",
     });
   }
-  res.json({
-    data: ticket,
-    message: "ok",
-  });
+  
+  this.response({
+    res,message:'ok',data:ticket
+  })
       
     }
   async updateTicket(req,res) {
     
     const user = await User.findById(req.user._id);
+    
+
+    const ticket = await Ticket.findById( req.params.id);
     if (
-      user.ticketRoleCode === TICKET_ROLE_CODES.USER &&
-      ticket.createdBy.toString() === user._id.toString()
-    ) {
+      user.ticketRoleCode === TICKET_ROLE_CODES.USER && ticket.createdBy.toString() === user._id.toString()) {
+        const ticket = await Ticket.findByIdAndUpdate(
+          req.user._id,
+          {
+            title: req.body.title,
+            description: req.body.description,
+            priority: req.body.priority,
+            status: req.body.status,
+            assignedTo: req.body.assignedTo,
+            updatedAt: Date.now(),
+          },
+          { new: true }
+        );
+    }
+    else if(user.ticketRoleCode === TICKET_ROLE_CODES.ADMIN ||user.ticketRoleCode === TICKET_ROLE_CODES.MANAGER){
+      const ticket = await Ticket.findByIdAndUpdate(
+        req.params.id,
+        {
+          title: req.body.title,
+          description: req.body.description,
+          priority: req.body.priority,
+          status: req.body.status,
+          assignedTo: req.body.assignedTo,
+          updatedAt: Date.now(),
+        },
+        { new: true }
+      );
+    }
+    else {
       return res.status(403).json({ error: "Forbidden" });
     }
 
-    const ticket = await Ticket.findByIdAndUpdate(
-      req.params.id,
-      {
-        title: req.body.title,
-        description: req.body.description,
-        priority: req.body.priority,
-        status: req.body.status,
-        assignedTo: req.body.assignedTo,
-        updatedAt: Date.now(),
-      },
-      { new: true }
-    );
+
     if (!ticket) {
       return res.status(404).json({
         data: null,
         message: "the ticket with this id was not found",
       });
     }
-    res.json({
-      data: ticket,
-      message: "ok",
-    });
+
+    this.response({
+      res,message:'ok',data:ticket
+    })
         
     }
     
