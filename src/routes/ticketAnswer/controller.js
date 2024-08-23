@@ -27,7 +27,26 @@ module.exports = new (class extends controller {
   }
 
   async deleteTicketAnswer(req, res) {
-    
+
+    const user = await User.findById(req.user._id);
+    if (
+      user.ticketRoleCode !== TICKET_ROLE_CODES.ADMIN && user.ticketRoleCode !== TICKET_ROLE_CODES.AGENT)
+       {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+    const ticketAnswer = await TicketAnswer.findByIdAndDelete(req.params.id);
+    if (!ticketAnswer) {
+      return res.status(404).json({
+        data: null,
+        message: "the ticketAnswer with this id was not found",
+      });
+    }
+
+    this.response({
+      res,
+      message: "ok",
+      data: ticketAnswer,
+    });
     
   }
 
