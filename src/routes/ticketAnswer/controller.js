@@ -12,7 +12,7 @@ module.exports = new (class extends controller {
 
   async createTicketAnswer(req, res) {
     const { ticketId, userId, answerText } = req.body;
-    let newTicketAnswer = new Ticket({
+    let newTicketAnswer = new TicketAnswer({
       ticketId,
       userId:req.user._id,
       answerText
@@ -30,8 +30,38 @@ module.exports = new (class extends controller {
     
     
   }
+
   async updateTicketAnswer(req, res) {
-    
+    const user = await User.findById(req.user._id);
+    const ticketAnswer = await TicketAnswer.findById(req.params.id);
+    if (
+      user.ticketRoleCode === TICKET_ROLE_CODES.ADMIN || user.ticketRoleCode === TICKET_ROLE_CODES.AGENT) {
+
+      const ticketAnswer = await TicketAnswer.findByIdAndUpdate(
+        req.params.id,
+        {
+          ticketId: req.body.ticketId,
+          answerText: req.body.answerText,
+          updatedAt: Date.now(),
+        },
+        { new: true }
+      );
+    } else {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+
+    if (!ticketAnswer) {
+      return res.status(404).json({
+        data: null,
+        message: "the ticketAnswer with this id was not found",
+      });
+    }
+
+    this.response({
+      res,
+      message: "ok",
+      data: ticketAnswer,
+    });
     
   }
 })();
