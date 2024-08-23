@@ -14,16 +14,12 @@ module.exports = new (class extends controller {
     const endIndex = startIndex + limit;
 
     const user = await User.findById(req.user._id);
-    const ticket = await Ticket.findOne({_id:req.ticketAnswer.ticketId});
     if (
       user.ticketRoleCode === TICKET_ROLE_CODES.ADMIN || user.ticketRoleCode === TICKET_ROLE_CODES.MANAGER) 
       {
       data = await TicketAnswer.find()
     } else if (user.ticketRoleCode === TICKET_ROLE_CODES.AGENT) {
-      data = await TicketAnswer.find({ userId: req.user._id })
-    } else if(user.ticketRoleCode === TICKET_ROLE_CODES.USER){
-      data = await TicketAnswer.find({ ticketId: ticket._id })
-    }
+      data = await TicketAnswer.find({ userId: req.user._id })}
     data.sort((a, b) => {
       if (a.createdAt < b.createdAt) return 1;
       if (a.createdAt > b.createdAt) return -1;
