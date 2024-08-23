@@ -9,6 +9,11 @@ router.get(
   controller.getTicketAnswer
 )
 
+router.get(
+  '/:id',
+  controller.getTicketAnswerUser
+)
+
 router.post(
   '/',
   validator.createValidator(),

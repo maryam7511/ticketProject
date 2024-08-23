@@ -13,7 +13,7 @@ const {isLoggined,isAdmin}=require('./../middlewares/auth')
 router.use('/auth',authRouter);
 router.use('/user',isLoggined,userRouter);
 router.use('/admin',isLoggined,isAdmin,adminRouter);
-router.use('/ticketAnswers',isLoggined,isAdmin,ticketAnswerRouter);
+router.use('/ticketAnswers',isLoggined,ticketAnswerRouter);
 router.use('/ticket',isLoggined,ticketRouter);
 
 router.use(error)

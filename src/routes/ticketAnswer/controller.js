@@ -14,13 +14,46 @@ module.exports = new (class extends controller {
     const endIndex = startIndex + limit;
 
     const user = await User.findById(req.user._id);
+    const ticket = await Ticket.findOne({_id:req.ticketAnswer.ticketId});
     if (
       user.ticketRoleCode === TICKET_ROLE_CODES.ADMIN || user.ticketRoleCode === TICKET_ROLE_CODES.MANAGER) 
       {
       data = await TicketAnswer.find()
     } else if (user.ticketRoleCode === TICKET_ROLE_CODES.AGENT) {
       data = await TicketAnswer.find({ userId: req.user._id })
-    } 
+    } else if(user.ticketRoleCode === TICKET_ROLE_CODES.USER){
+      data = await TicketAnswer.find({ ticketId: ticket._id })
+    }
+    data.sort((a, b) => {
+      if (a.createdAt < b.createdAt) return 1;
+      if (a.createdAt > b.createdAt) return -1;
+      return 0;
+    });
+    res.paginatedResults = {
+      results: data.slice(startIndex, endIndex),
+      currentPage: page,
+      totalPages: Math.ceil(data.length / limit),
+    };
+
+    this.response({
+      res,
+      message: "ok",
+      data: res.paginatedResults,
+    });
+  }
+  async getTicketAnswerUser(req, res) {
+    let data = [];
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5;
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+
+    const user = await User.findById(req.user._id);
+    const ticket = await Ticket.findById(req.params.id);
+   
+    if(user.ticketRoleCode === TICKET_ROLE_CODES.USER){
+      data = await TicketAnswer.find({ ticketId: ticket._id })
+    }
     data.sort((a, b) => {
       if (a.createdAt < b.createdAt) return 1;
       if (a.createdAt > b.createdAt) return -1;
@@ -40,8 +73,9 @@ module.exports = new (class extends controller {
   }
 
 
+
   async createTicketAnswer(req, res) {
-    const { ticketId, userId, answerText } = req.body;
+    const { ticketId, answerText } = req.body;
     let newTicketAnswer = new TicketAnswer({
       ticketId,
       userId:req.user._id,
