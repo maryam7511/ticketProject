@@ -7,8 +7,38 @@ const { TicketAnswer } = require("./../../models/ticketAnswer");
 
 module.exports = new (class extends controller {
   async getTicketAnswer(req, res) {
-    
+    let data = [];
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5;
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+
+    const user = await User.findById(req.user._id);
+    if (
+      user.ticketRoleCode === TICKET_ROLE_CODES.ADMIN || user.ticketRoleCode === TICKET_ROLE_CODES.MANAGER) 
+      {
+      data = await TicketAnswer.find()
+    } else if (user.ticketRoleCode === TICKET_ROLE_CODES.AGENT) {
+      data = await TicketAnswer.find({ userId: req.user._id })
+    } 
+    data.sort((a, b) => {
+      if (a.createdAt < b.createdAt) return 1;
+      if (a.createdAt > b.createdAt) return -1;
+      return 0;
+    });
+    res.paginatedResults = {
+      results: data.slice(startIndex, endIndex),
+      currentPage: page,
+      totalPages: Math.ceil(data.length / limit),
+    };
+
+    this.response({
+      res,
+      message: "ok",
+      data: res.paginatedResults,
+    });
   }
+
 
   async createTicketAnswer(req, res) {
     const { ticketId, userId, answerText } = req.body;
